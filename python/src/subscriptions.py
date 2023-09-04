@@ -12,7 +12,7 @@ from candlesticks import (
 
 
 async def subscribe_binance_candles(queue: asyncio.Queue):
-    uri = "wss://stream.binance.com:9443/ws/btcusdt@kline_1m"
+    uri = "wss://stream.binance.com:9443/ws/btcusdt@kline_5m"
     async with websockets.connect(uri) as websocket:
         while True:
             msg: str = await websocket.recv()
@@ -66,4 +66,4 @@ async def subscribe_bitfinex_candles(queue: asyncio.Queue):
                     volume=obj[1][5],
                 ),
             )
-            await queue.put(candle_obj)
+            await queue.put(candle_obj.data)
