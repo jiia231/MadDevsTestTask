@@ -2,11 +2,10 @@ import asyncio
 import json
 
 import websockets
-
 from candlesticks import (
+    BinanceCandlestickData,
     BitfinexCandlestick,
     BitfinexCandlestickSnapshotData,
-    BinanceCandlestickData,
     BitfinexCandlestickUpdateData,
 )
 

@@ -4,7 +4,7 @@ import asyncio
 
 from calculations import RsiCalculator, VwapCalculator
 from candlesticks import BinanceCandlestick, BitfinexCandlestick
-from subscriptions import subscribe_bitfinex_candles, subscribe_binance_candles
+from subscriptions import subscribe_binance_candles, subscribe_bitfinex_candles
 
 
 async def main():
@@ -24,7 +24,9 @@ async def main():
             if binance_candle.x:  # if it is closing record
                 rsi = rsi_calculator.update(float(binance_candle.c))
                 if rsi is not None:
-                    print(f"Binance\tClose Price: {float(binance_candle.c)}\tRSI: {rsi}")
+                    print(
+                        f"Binance\tClose Price: {float(binance_candle.c)}\tRSI: {rsi}"
+                    )
         if not bitfinex_queue.empty():
             bitfinex_candle: BitfinexCandlestick = bitfinex_queue.get_nowait()
             # print(bitfinex_candle)

@@ -75,8 +75,8 @@ pub struct BinanceCandlestick {
 }
 
 fn parse_string_to_f64<'de, D>(deserializer: D) -> Result<f64, D::Error>
-    where
-        D: Deserializer<'de>,
+where
+    D: Deserializer<'de>,
 {
     let s: String = Deserialize::deserialize(deserializer)?;
 
@@ -87,8 +87,8 @@ fn parse_string_to_f64<'de, D>(deserializer: D) -> Result<f64, D::Error>
 }
 
 fn parse_u64_to_datetime<'de, D>(deserializer: D) -> Result<DateTime<Utc>, D::Error>
-    where
-        D: Deserializer<'de>,
+where
+    D: Deserializer<'de>,
 {
     let ts: u64 = Deserialize::deserialize(deserializer)?;
 

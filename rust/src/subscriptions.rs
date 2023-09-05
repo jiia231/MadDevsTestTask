@@ -1,5 +1,5 @@
-use futures_util::SinkExt;
 use futures_util::stream::StreamExt;
+use futures_util::SinkExt;
 use tokio::sync::{broadcast, mpsc};
 use tokio::time::Duration;
 use tokio_tungstenite::connect_async;
@@ -19,19 +19,15 @@ pub async fn subscribe_binance_candles(
 
     loop {
         tokio::select! {
-            _ = exit_receiver.recv() => {
-                println!("Closing Binance WebSocket");
-                let _ = ws_stream.close(None).await;
-                break;
-            }
-            _ = interval.tick() => {
-                if let Some(msg) = ws_stream.next().await {
-                    if let Ok(msg) = msg {
-                        if let Message::Text(data) = msg {
-                            let candlestick = serde_json::from_str::<BinanceCandlestickData>(&data).expect("Couldn't parse data");
-                            sender.send(candlestick.k).await.expect("Failed to send to channel");
-                        }
-                    }
+        _ = exit_receiver.recv() => {
+            println!("Closing Binance WebSocket");
+            let _ = ws_stream.close(None).await;
+            break;
+        }
+        _ = interval.tick() => {
+            if let Some(Ok(Message::Text(data)))=ws_stream.next().await {
+                let candlestick = serde_json::from_str::<BinanceCandlestickData>(&data).expect("Couldn't parse data");
+                        sender.send(candlestick.k).await.expect("Failed to send to channel");
                 }
             }
         }
@@ -47,17 +43,22 @@ pub async fn subscribe_bitfinex_candles(
         .await
         .expect("Failed to connect to Bitfinex");
     let _info_msg = ws_stream.next().await;
-    let _ = ws_stream.send(Message::from("{\"event\":\"subscribe\",\"channel\":\"candles\",\"key\":\"trade:1m:tBTCUSD\"}")).await;
+    let _ = ws_stream
+        .send(Message::from(
+            "{\"event\":\"subscribe\",\"channel\":\"candles\",\"key\":\"trade:1m:tBTCUSD\"}",
+        ))
+        .await;
     let _subscription_msg = ws_stream.next().await;
-    if let Some(Ok(snapshot_msg)) = ws_stream.next().await {
-        if let Message::Text(data) = snapshot_msg {
-            let snapshot = serde_json::from_str::<BitfinexCandlestickSnapshotData>(&data).expect("Couldn't parse data");
-            for candlestick in snapshot.candle_data.iter() {
-                sender.send(candlestick.clone()).await.expect("Failed to send to channel");
-            }
+    if let Some(Ok(Message::Text(data))) = ws_stream.next().await {
+        let snapshot = serde_json::from_str::<BitfinexCandlestickSnapshotData>(&data)
+            .expect("Couldn't parse data");
+        for candlestick in snapshot.candle_data.iter() {
+            sender
+                .send(candlestick.clone())
+                .await
+                .expect("Failed to send to channel");
         }
     };
-
 
     let mut interval = tokio::time::interval(Duration::from_secs(1));
 
@@ -69,14 +70,10 @@ pub async fn subscribe_bitfinex_candles(
                 break;
             }
             _ = interval.tick() => {
-                if let Some(msg) = ws_stream.next().await {
-                    if let Ok(msg) = msg {
-                        if let Message::Text(data) = msg {
-                            if data.contains("\"event\"") || data.contains("hb") { continue }
-                            let candlestick = serde_json::from_str::<BitfinexCandlestickUpdateData>(&data).expect("Couldn't parse data");
-                            sender.send(candlestick.candle_data.clone()).await.expect("Failed to send to channel");
-                        }
-                    }
+                if let Some(Ok(Message::Text(data))) = ws_stream.next().await {
+                    if data.contains("\"event\"") || data.contains("hb") { continue }
+                    let candlestick = serde_json::from_str::<BitfinexCandlestickUpdateData>(&data).expect("Couldn't parse data");
+                    sender.send(candlestick.candle_data.clone()).await.expect("Failed to send to channel");
                 }
             }
         }

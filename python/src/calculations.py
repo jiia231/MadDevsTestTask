@@ -1,9 +1,9 @@
 class RsiCalculator:
-    def __init__(self, period):
+    def __init__(self, period: int):
         self.period = period
         self.close_prices = []
 
-    def update(self, close_price):
+    def update(self, close_price: float):
         self.close_prices.append(close_price)
 
         if len(self.close_prices) >= self.period:
@@ -35,7 +35,7 @@ class RsiCalculator:
 
         return {"gains": gains, "losses": losses}
 
-    def calculate_average(self, values):
+    def calculate_average(self, values: list[float]):
         return sum(values) / len(values) if len(values) > 0 else 0.0
 
 
@@ -44,7 +44,7 @@ class VwapCalculator:
         self.total_volume = 0.0
         self.cumulative_price_volume = 0.0
 
-    def update(self, price, volume):
+    def update(self, price: float, volume: float):
         self.cumulative_price_volume += price * volume
         self.total_volume += volume
 

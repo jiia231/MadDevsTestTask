@@ -5,9 +5,9 @@ use tokio::task;
 use calculations::{rsi, vwap};
 use subscriptions::{subscribe_binance_candles, subscribe_bitfinex_candles};
 
-mod subscriptions;
-mod candlesticks;
 mod calculations;
+mod candlesticks;
+mod subscriptions;
 
 #[tokio::main]
 async fn main() {
